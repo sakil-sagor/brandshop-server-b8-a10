@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
 
 
 require('dotenv').config()
@@ -28,6 +29,7 @@ async function run() {
         const database = client.db("Lotus-Park");
         const productsCollection = database.collection("products");
         const brandsCollection = database.collection("brands");
+        const addToCartCollection = database.collection("addToCart");
 
 
         // get products 
@@ -36,11 +38,45 @@ async function run() {
             const result = await cursor.toArray();
             res.json(result);
         })
+        // get product for add to cart page
+        // app.get('/addToCartProducts', async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: ObjectId(id) };
+        //     const result = await productsCollection.findOne(query)
+        //     res.json(result);
+        // })
         // get brands 
         app.get('/brands', async (req, res) => {
             const cursor = brandsCollection.find();
             const result = await cursor.toArray();
             res.json(result);
+        })
+        // get brands 
+        app.get('/brands/:_id', async (req, res) => {
+            const id = req.params._id;
+            const query = { _id: new ObjectId(id) }
+            const brdName = await brandsCollection.findOne(query);
+            console.log(brdName.brandName)
+            let productQuery = {};
+            productQuery = { brandName: brdName.brandName }
+            const cursor = productsCollection.find(productQuery);
+            const result = await cursor.toArray();
+
+            res.json(result)
+        })
+        // get all add to cart
+        app.get('/addToCart', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const cursor = addToCartCollection.find(query);
+            const addToCart = await cursor.toArray();
+            let addToCartProducts = [];
+            for (let product of addToCart) {
+                const query = { _id: new ObjectId(product?.id) }
+                let cursor = await productsCollection.findOne(query)
+                addToCartProducts.push(cursor)
+            }
+            res.send(addToCartProducts);
         })
 
 
@@ -57,6 +93,37 @@ async function run() {
             const result = await brandsCollection.insertOne(product)
             res.json(result);
         })
+        // add to cart
+        app.post('/addToCart', async (req, res) => {
+            const addToCart = req.body;
+            const productId = addToCart.id
+            const email = addToCart.email;
+            const query = { id: productId, email: email }
+            const result = await addToCartCollection.findOne(query)
+            if (!result) {
+                const result = await addToCartCollection.insertOne(addToCart)
+                res.json(result);
+            } else {
+                res.json(0);
+            }
+        })
+
+
+
+
+        // single add to cart delete 
+        app.delete('/addToCart', async (req, res) => {
+            const addToCart = req.query;
+            console.log(addToCart)
+            const productId = addToCart.id
+            const email = addToCart.email;
+            const query = { id: productId, email: email }
+            // const query = { _id: new ObjectId(id) }
+            const result = await addToCartCollection.deleteOne(query);
+            // console.log(result);
+            res.json(result)
+        })
+
 
 
 
