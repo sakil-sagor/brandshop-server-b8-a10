@@ -13,7 +13,7 @@ var cors = require('cors')
 app.use(cors())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.9clk0.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
-// const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
 
 const client = new MongoClient(uri, {
     serverApi: {
@@ -38,12 +38,6 @@ async function run() {
             const result = await cursor.toArray();
             res.json(result);
         })
-        // app.get('/products/:id', async (req, res) => {
-        //     const id = req.params._id;
-        //     const query = { _id: new ObjectId(id) }
-        //     const result = await productsCollection.findOne(query);
-        //     res.json(result)
-        // })
 
         // get brands 
         app.get('/brands', async (req, res) => {
@@ -113,21 +107,9 @@ async function run() {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) }
             const product = req.body;
-            // const filter = { id: product._id };
+
             console.log(product)
             const options = { upsert: true }
-
-            // const coffee = {
-            //     $set: {
-            //         name: updatedCoffee.name,
-            //         quantity: updatedCoffee.quantity,
-            //         supplier: updatedCoffee.supplier,
-            //         taste: updatedCoffee.taste,
-            //         category: updatedCoffee.category,
-            //         details: updatedCoffee.details,
-            //         photo: updatedCoffee.photo
-            //     }
-            // }
 
             const updateDoc = {
                 $set: {
