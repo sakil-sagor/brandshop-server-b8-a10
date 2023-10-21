@@ -12,9 +12,11 @@ const port = process.env.PORT || 5000
 var cors = require('cors')
 app.use(cors())
 
+
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.9clk0.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 
-
+// const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
@@ -66,7 +68,7 @@ async function run() {
             const addToCart = await cursor.toArray();
             let addToCartProducts = [];
             for (let product of addToCart) {
-                const query = { _id: new ObjectId(product?.id) }
+                const query = { _id: new ObjectId(product.id) }
                 let cursor = await productsCollection.findOne(query)
                 addToCartProducts.push(cursor)
             }
